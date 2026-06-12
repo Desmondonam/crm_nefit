@@ -89,6 +89,67 @@ export async function getStudentPayments() {
   return data
 }
 
+// ── Leads ─────────────────────────────────────────────────────────────────────
+
+export async function getLeads() {
+  const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+export async function createLead(lead) {
+  const { data, error } = await supabase
+    .from('leads')
+    .insert([{ ...lead, updated_at: new Date().toISOString() }])
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateLead(id, updates) {
+  const { data, error } = await supabase
+    .from('leads')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteLead(id) {
+  const { error } = await supabase.from('leads').delete().eq('id', id)
+  if (error) throw error
+}
+
+// ── Lead Activities ───────────────────────────────────────────────────────────
+
+export async function getLeadActivities(leadId) {
+  const { data, error } = await supabase
+    .from('lead_activities')
+    .select('*')
+    .eq('lead_id', leadId)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+export async function createLeadActivity(activity) {
+  const { data, error } = await supabase
+    .from('lead_activities')
+    .insert([activity])
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+// ── Student Payments (continued) ──────────────────────────────────────────────
+
 export async function recordPayment(paymentId, { amountToAdd, method, date, courseFee }) {
   // fetch current record first
   const { data: current, error: fetchErr } = await supabase

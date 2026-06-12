@@ -7,6 +7,7 @@ import Customers from './pages/Customers';
 import ActiveStudents from './pages/ActiveStudents';
 import Analytics from './pages/Analytics';
 import Finance from './pages/Finance';
+import Leads from './pages/Leads';
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -31,6 +32,7 @@ function AppRoutes() {
         <Route path="active-students" element={<ActiveStudents />} />
         <Route path="analytics"       element={<Analytics />} />
         <Route path="finance"         element={<Finance />} />
+        <Route path="leads"           element={<Leads />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
