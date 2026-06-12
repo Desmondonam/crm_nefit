@@ -185,6 +185,63 @@ export async function createLeadActivity(activity) {
   return data
 }
 
+// ── Companies (B2B) ──────────────────────────────────────────────────────────
+
+export async function getCompanies() {
+  const { data, error } = await supabase
+    .from('companies')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+export async function createCompany(company) {
+  const { data, error } = await supabase
+    .from('companies')
+    .insert([{ ...company, updated_at: new Date().toISOString() }])
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateCompany(id, updates) {
+  const { data, error } = await supabase
+    .from('companies')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteCompany(id) {
+  const { error } = await supabase.from('companies').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function getCompanyActivities(companyId) {
+  const { data, error } = await supabase
+    .from('company_activities')
+    .select('*')
+    .eq('company_id', companyId)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+export async function createCompanyActivity(activity) {
+  const { data, error } = await supabase
+    .from('company_activities')
+    .insert([activity])
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
 // ── Student Payments (continued) ──────────────────────────────────────────────
 
 export async function recordPayment(paymentId, { amountToAdd, method, date, courseFee }) {

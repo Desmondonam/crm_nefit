@@ -3,8 +3,9 @@ import {
   Plus, X, Search, Phone, Mail, MapPin, Calendar, User,
   BookOpen, MessageCircle, FileText, AlertCircle, CheckCircle2,
   Pencil, Trash2, LayoutGrid, List, Clock, UserPlus, Tag,
-  Activity, Users, Filter
+  Activity, Users, Filter, Building2
 } from 'lucide-react'
+import Companies from './Companies'
 import {
   getLeads, createLead, updateLead, deleteLead,
   getLeadActivities, createLeadActivity, createStudent
@@ -972,6 +973,7 @@ function ListView({ leads, onView }) {
 
 export default function Leads() {
   const courses = useCourses()
+  const [activeTab,    setActiveTab]    = useState('leads')
   const [leads,        setLeads]        = useState([])
   const [loading,      setLoading]      = useState(true)
   const [error,        setError]        = useState(null)
@@ -983,6 +985,21 @@ export default function Leads() {
   const [adding,       setAdding]       = useState(false)
   const [viewing,      setViewing]      = useState(null)
   const [saving,       setSaving]       = useState(false)
+
+  const tabBar = (
+    <div className="flex gap-1 bg-white rounded-xl p-1 shadow-sm border border-slate-100 w-fit">
+      <button onClick={() => setActiveTab('leads')}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors
+          ${activeTab === 'leads' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>
+        <Users size={14} /> Individual Leads
+      </button>
+      <button onClick={() => setActiveTab('companies')}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors
+          ${activeTab === 'companies' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>
+        <Building2 size={14} /> Companies (B2B)
+      </button>
+    </div>
+  )
 
   async function load() {
     setLoading(true); setError(null)
@@ -1039,11 +1056,21 @@ export default function Leads() {
     } catch(e) { alert('Error: ' + e.message) }
   }
 
-  if (loading) return <Spinner message="Loading leads pipeline…" />
-  if (error)   return <ErrorMsg message={error} onRetry={load} />
+  if (activeTab === 'companies') {
+    return (
+      <div className="space-y-5">
+        {tabBar}
+        <Companies />
+      </div>
+    )
+  }
+
+  if (loading) return <div className="space-y-5">{tabBar}<Spinner message="Loading leads pipeline…" /></div>
+  if (error)   return <div className="space-y-5">{tabBar}<ErrorMsg message={error} onRetry={load} /></div>
 
   return (
     <div className="space-y-5">
+      {tabBar}
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {[
