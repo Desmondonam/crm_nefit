@@ -8,6 +8,7 @@ const PAGE_TITLES = {
   '/customers':       'Customers',
   '/active-students': 'Active Students',
   '/analytics':       'Analytics',
+  '/finance':         'Finance',
 };
 
 export default function Layout() {

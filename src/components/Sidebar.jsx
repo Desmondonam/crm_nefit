@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard, Users, BarChart2, UserCheck, Monitor, LogOut, X
+  LayoutDashboard, Users, BarChart2, UserCheck, Monitor, LogOut, X, Wallet
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { to: '/customers',      icon: Users,           label: 'Customers'        },
   { to: '/active-students',icon: UserCheck,       label: 'Active Students'  },
   { to: '/analytics',      icon: BarChart2,       label: 'Analytics'        },
+  { to: '/finance',        icon: Wallet,          label: 'Finance'          },
 ];
 
 export default function Sidebar({ open, onClose }) {
