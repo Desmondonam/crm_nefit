@@ -185,6 +185,27 @@ export async function createLeadActivity(activity) {
   return data
 }
 
+// ── Public Enrollment (free course, no auth) ──────────────────────────────────
+
+export async function enrollStudentPublic(student) {
+  const { data, error } = await supabase
+    .from('students')
+    .insert([{
+      ...student,
+      status: 'Active',
+      progress: 0,
+      enrollment_date: new Date().toISOString().split('T')[0],
+    }])
+    .select()
+    .single()
+  if (error) throw error
+  // free course — mark payment as Paid immediately
+  await supabase
+    .from('student_payments')
+    .insert([{ student_id: data.id, amount_paid: 0, status: 'Paid', payment_date: new Date().toISOString().split('T')[0], method: 'Free' }])
+  return data
+}
+
 // ── Companies (B2B) ──────────────────────────────────────────────────────────
 
 export async function getCompanies() {

@@ -10,6 +10,7 @@ import Analytics from './pages/Analytics';
 import Finance from './pages/Finance';
 import Leads from './pages/Leads';
 import Courses from './pages/Courses';
+import PublicEnroll from './pages/PublicEnroll';
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -37,6 +38,7 @@ function AppRoutes() {
         <Route path="leads"           element={<Leads />} />
         <Route path="courses"         element={<Courses />} />
       </Route>
+      <Route path="/enroll" element={<PublicEnroll />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
