@@ -95,15 +95,15 @@ export default function PublicEnroll() {
         gender:   form.gender   || 'Other',
         location: form.location || null,
         course:   COURSE_NAME,
-        notes:    form.source   ? `Heard via: ${form.source}` : null,
       }
       const student = await enrollStudentPublic(payload)
       setSuccess({ name: form.name.split(' ')[0], refId: String(student.id).padStart(5, '0') })
     } catch (err) {
+      console.error('Enrollment error:', err)
       if (err.message?.includes('duplicate') || err.message?.includes('unique')) {
         setError('This email address is already registered for this course.')
       } else {
-        setError('Something went wrong. Please try again or contact us at info@nextedgeforit.com')
+        setError(`Registration failed: ${err.message}`)
       }
     } finally {
       setSubmitting(false)
