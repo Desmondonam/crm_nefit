@@ -12,9 +12,16 @@ export const COURSES = [
 
 export const STATUSES = ['Active', 'Inactive', 'Completed', 'On Hold']
 
+// Updated at runtime by CoursesContext after fetching from Supabase
+let _coursesCache = null
+
+export function setCoursesCache(courses) {
+  _coursesCache = courses
+}
+
 export function getCourseColor(courseName) {
-  const c = COURSES.find(c => c.name === courseName)
-  return c ? c.color : '#6366f1'
+  const source = _coursesCache ?? COURSES
+  return source.find(c => c.name === courseName)?.color ?? '#6366f1'
 }
 
 export function getStatusColor(status) {

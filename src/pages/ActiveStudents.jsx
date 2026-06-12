@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Search, BookOpen, Clock, MapPin, Mail, Phone } from 'lucide-react'
 import { getStudents } from '../lib/api'
-import { COURSES, getCourseColor, getInitials, getStatusColor } from '../data/mockData'
+import { getCourseColor, getInitials, getStatusColor } from '../data/mockData'
+import { useCourses } from '../context/CoursesContext'
 import Spinner, { ErrorMsg } from '../components/Spinner'
 
 function StudentCard({ student }) {
@@ -70,6 +71,7 @@ function StudentCard({ student }) {
 }
 
 export default function ActiveStudents() {
+  const courses = useCourses()
   const [students, setStudents] = useState([])
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState(null)
@@ -105,7 +107,7 @@ export default function ActiveStudents() {
       return 0
     })
 
-  const courseBreakdown = COURSES.map(c => ({
+  const courseBreakdown = courses.map(c => ({
     ...c,
     count: active.filter(s => s.course === c.name).length,
   })).filter(c => c.count > 0)
@@ -135,7 +137,7 @@ export default function ActiveStudents() {
         <select className="py-2 pl-3 pr-8 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700"
           value={course} onChange={e => setCourse(e.target.value)}>
           <option value="All">All Courses</option>
-          {COURSES.map(c => <option key={c.id}>{c.name}</option>)}
+          {courses.map(c => <option key={c.id}>{c.name}</option>)}
         </select>
         <select className="py-2 pl-3 pr-8 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700"
           value={sortBy} onChange={e => setSortBy(e.target.value)}>

@@ -8,10 +8,11 @@ import {
   Plus, Pencil, Trash2, X, Search, Filter, CheckCircle2, Clock, XCircle
 } from 'lucide-react'
 import {
-  QAR, COURSE_FEES, EXPENSE_CATEGORIES,
+  QAR, EXPENSE_CATEGORIES,
   PAYMENT_STATUS_COLORS, EXPENSE_CATEGORY_COLORS
 } from '../data/financeData'
-import { COURSES, getCourseColor, getInitials } from '../data/mockData'
+import { getCourseColor, getInitials } from '../data/mockData'
+import { useCourses } from '../context/CoursesContext'
 import {
   getStudents, getStudentPayments, recordPayment,
   getExpenses, createExpense, updateExpense, deleteExpense
@@ -128,7 +129,8 @@ function ExpenseModal({ expense, onClose, onSave, saving }) {
 // ─── Payment Modal ───────────────────────────────────────────────────────────
 
 function PaymentModal({ record, student, onClose, onSave, saving }) {
-  const courseFee = COURSE_FEES[student?.course] ?? 0
+  const courses   = useCourses()
+  const courseFee = courses.find(c => c.name === student?.course)?.fee ?? 0
   const balance   = courseFee - Number(record.amount_paid)
   const [amount, setAmount] = useState('')
   const [method, setMethod] = useState('Bank Transfer')
@@ -200,8 +202,9 @@ function PaymentModal({ record, student, onClose, onSave, saving }) {
 // ─── Tab: Overview ───────────────────────────────────────────────────────────
 
 function Overview({ payments, students, expenses }) {
+  const courses          = useCourses()
   const totalRevenue     = payments.reduce((s, p) => s + Number(p.amount_paid), 0)
-  const totalFees        = students.reduce((s, st) => s + (COURSE_FEES[st.course] ?? 0), 0)
+  const totalFees        = students.reduce((s, st) => s + (courses.find(c => c.name === st.course)?.fee ?? 0), 0)
   const totalOutstanding = totalFees - totalRevenue
   const totalExpenses    = expenses.reduce((s, e) => s + Number(e.amount), 0)
   const netProfit        = totalRevenue - totalExpenses
@@ -300,6 +303,7 @@ function Overview({ payments, students, expenses }) {
 // ─── Tab: Student Payments ───────────────────────────────────────────────────
 
 function StudentPayments({ payments, setPayments, students }) {
+  const courses        = useCourses()
   const [search,       setSearch]       = useState('')
   const [filterStatus, setFilterStatus] = useState('All')
   const [recording,    setRecording]    = useState(null)
@@ -309,7 +313,7 @@ function StudentPayments({ payments, setPayments, students }) {
     return payments
       .map(p => {
         const student   = students.find(s => s.id === p.student_id)
-        const courseFee = COURSE_FEES[student?.course] ?? 0
+        const courseFee = courses.find(c => c.name === student?.course)?.fee ?? 0
         const balance   = courseFee - Number(p.amount_paid)
         return { ...p, student, courseFee, balance }
       })

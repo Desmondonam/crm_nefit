@@ -13,7 +13,8 @@ import {
   PIPELINE_STAGES, LOST_STAGE, LEAD_SOURCES, ACTIVITY_TYPES,
   LOST_REASONS, getStageInfo
 } from '../data/leadsData'
-import { COURSES, getCourseColor, getInitials } from '../data/mockData'
+import { getCourseColor, getInitials } from '../data/mockData'
+import { useCourses } from '../context/CoursesContext'
 import Spinner, { ErrorMsg } from '../components/Spinner'
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -161,6 +162,7 @@ const EMPTY_LEAD = {
 }
 
 function LeadFormModal({ lead, onClose, onSave, saving }) {
+  const courses = useCourses()
   const [form,   setForm]   = useState(lead ? {
     name:            lead.name,
     email:           lead.email           ?? '',
@@ -173,7 +175,7 @@ function LeadFormModal({ lead, onClose, onSave, saving }) {
     assigned_to:     lead.assigned_to     ?? '',
     next_follow_up:  lead.next_follow_up  ?? '',
     notes:           lead.notes           ?? '',
-  } : { ...EMPTY_LEAD })
+  } : { ...EMPTY_LEAD, course_interest: courses[0]?.name ?? 'Web Development' })
   const [errors, setErrors] = useState({})
 
   function set(k, v) { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: '' })) }
@@ -229,7 +231,7 @@ function LeadFormModal({ lead, onClose, onSave, saving }) {
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">Course Interest *</label>
               <select className={inp} value={form.course_interest} onChange={e => set('course_interest', e.target.value)}>
-                {COURSES.map(c => <option key={c.id}>{c.name}</option>)}
+                {courses.filter(c => c.active).map(c => <option key={c.id}>{c.name}</option>)}
               </select>
             </div>
             <div>
@@ -397,6 +399,7 @@ function LostModal({ onClose, onConfirm, saving }) {
 // ─── Convert to Student Modal ─────────────────────────────────────────────────
 
 function ConvertModal({ lead, onClose, onConverted }) {
+  const courses = useCourses()
   const [form,   setForm]   = useState({
     name:            lead.name,
     email:           lead.email    ?? '',
@@ -483,7 +486,7 @@ function ConvertModal({ lead, onClose, onConverted }) {
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">Course *</label>
               <select className={inp} value={form.course} onChange={e => set('course', e.target.value)}>
-                {COURSES.map(c => <option key={c.id}>{c.name}</option>)}
+                {courses.filter(c => c.active).map(c => <option key={c.id}>{c.name}</option>)}
               </select>
             </div>
             <div>
@@ -968,6 +971,7 @@ function ListView({ leads, onView }) {
 // ─── Main Leads Page ──────────────────────────────────────────────────────────
 
 export default function Leads() {
+  const courses = useCourses()
   const [leads,        setLeads]        = useState([])
   const [loading,      setLoading]      = useState(true)
   const [error,        setError]        = useState(null)
@@ -1071,7 +1075,7 @@ export default function Leads() {
         <select className="py-2 pl-3 pr-8 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700"
           value={filterCourse} onChange={e => setFilterCourse(e.target.value)}>
           <option value="All">All Courses</option>
-          {COURSES.map(c => <option key={c.id}>{c.name}</option>)}
+          {courses.filter(c => c.active).map(c => <option key={c.id}>{c.name}</option>)}
         </select>
 
         <div className="flex items-center gap-1.5 ml-auto">

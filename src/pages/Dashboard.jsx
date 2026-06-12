@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Users, UserCheck, BookOpen, TrendingUp, ArrowUpRight } from 'lucide-react'
 import { getStudents } from '../lib/api'
-import { COURSES, getCourseColor, getStatusColor, getInitials } from '../data/mockData'
+import { getCourseColor, getStatusColor, getInitials } from '../data/mockData'
+import { useCourses } from '../context/CoursesContext'
 import Spinner, { ErrorMsg } from '../components/Spinner'
 
 function StatCard({ icon: Icon, label, value, sub, color }) {
@@ -36,6 +37,7 @@ function CourseBar({ course, count, total }) {
 }
 
 export default function Dashboard() {
+  const courses = useCourses()
   const [students, setStudents] = useState([])
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState(null)
@@ -66,7 +68,7 @@ export default function Dashboard() {
     .sort((a, b) => new Date(b.enrollment_date) - new Date(a.enrollment_date))
     .slice(0, 6)
 
-  const courseCounts = COURSES.map(c => ({
+  const courseCounts = courses.map(c => ({
     name:  c.name,
     count: students.filter(s => s.course === c.name).length,
   })).sort((a, b) => b.count - a.count)
@@ -74,7 +76,7 @@ export default function Dashboard() {
   const stats = [
     { icon: Users,      label: 'Total Students',  value: total,                color: '#6366f1', sub: 'All registered students'              },
     { icon: UserCheck,  label: 'Active Students',  value: active,               color: '#10b981', sub: `${total ? Math.round((active/total)*100) : 0}% of total` },
-    { icon: BookOpen,   label: 'Courses Offered',  value: COURSES.length,       color: '#0ea5e9', sub: 'Across all disciplines'               },
+    { icon: BookOpen,   label: 'Courses Offered',  value: courses.length || '—', color: '#0ea5e9', sub: 'Across all disciplines'               },
     { icon: TrendingUp, label: 'Completion Rate',  value: `${completionRate}%`, color: '#f59e0b', sub: `${completed} students graduated`      },
   ]
 

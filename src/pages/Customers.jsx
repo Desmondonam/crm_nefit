@@ -1,13 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Search, Plus, Pencil, Trash2, X, ChevronUp, ChevronDown, Filter } from 'lucide-react'
 import { getStudents, createStudent, updateStudent, deleteStudent } from '../lib/api'
-import { COURSES, STATUSES, getCourseColor, getStatusColor, getInitials } from '../data/mockData'
+import { STATUSES, getCourseColor, getStatusColor, getInitials } from '../data/mockData'
+import { useCourses } from '../context/CoursesContext'
 import Spinner, { ErrorMsg } from '../components/Spinner'
-
-const EMPTY_FORM = {
-  name: '', email: '', phone: '', age: '', gender: 'Male',
-  location: '', course: COURSES[0].name, status: 'Active', progress: 0, enrollment_date: '',
-}
 
 function Badge({ status }) {
   const sc = getStatusColor(status)
@@ -31,7 +27,12 @@ function ProgressBar({ value }) {
 }
 
 function Modal({ student, onClose, onSave, saving }) {
-  const [form,   setForm]   = useState(student ? { ...student } : { ...EMPTY_FORM })
+  const courses = useCourses()
+  const [form,   setForm]   = useState(student ? { ...student } : {
+    name: '', email: '', phone: '', age: '', gender: 'Male',
+    location: '', course: courses[0]?.name ?? 'Web Development',
+    status: 'Active', progress: 0, enrollment_date: '',
+  })
   const [errors, setErrors] = useState({})
 
   function set(field, value) {
@@ -94,7 +95,7 @@ function Modal({ student, onClose, onSave, saving }) {
           </Field>
           <Field label="Course Interest">
             <select className={inp} value={form.course} onChange={e => set('course', e.target.value)}>
-              {COURSES.map(c => <option key={c.id}>{c.name}</option>)}
+              {courses.filter(c => c.active).map(c => <option key={c.id}>{c.name}</option>)}
             </select>
           </Field>
           <Field label="Status">
@@ -143,6 +144,7 @@ function DeleteModal({ student, onClose, onConfirm, saving }) {
 }
 
 export default function Customers() {
+  const courses = useCourses()
   const [students,      setStudents]      = useState([])
   const [loading,       setLoading]       = useState(true)
   const [error,         setError]         = useState(null)
@@ -242,7 +244,7 @@ export default function Customers() {
             <select className="py-2 pl-3 pr-8 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700"
               value={filterCourse} onChange={e => setFilterCourse(e.target.value)}>
               <option value="All">All Courses</option>
-              {COURSES.map(c => <option key={c.id}>{c.name}</option>)}
+              {courses.map(c => <option key={c.id}>{c.name}</option>)}
             </select>
             <select className="py-2 pl-3 pr-8 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700"
               value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>

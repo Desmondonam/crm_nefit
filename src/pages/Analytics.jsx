@@ -4,7 +4,8 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts'
 import { getStudents } from '../lib/api'
-import { COURSES, getCourseColor } from '../data/mockData'
+import { getCourseColor } from '../data/mockData'
+import { useCourses } from '../context/CoursesContext'
 import Spinner, { ErrorMsg } from '../components/Spinner'
 
 const PIE_COLORS = ['#6366f1','#0ea5e9','#ef4444','#f59e0b','#10b981','#8b5cf6']
@@ -30,6 +31,7 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 export default function Analytics() {
+  const courses = useCourses()
   const [students, setStudents] = useState([])
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState(null)
@@ -56,7 +58,7 @@ export default function Analytics() {
     ].map(b => ({ range: b.range, count: students.filter(s => s.age >= b.min && s.age <= b.max).length }))
 
     // Course enrollment
-    const courseData = COURSES.map(c => ({
+    const courseData = courses.map(c => ({
       name: c.name, students: students.filter(s => s.course === c.name).length, color: c.color,
     }))
 
@@ -74,7 +76,7 @@ export default function Analytics() {
     ]
 
     // Average age per course
-    const avgAgeData = COURSES.map(c => {
+    const avgAgeData = courses.map(c => {
       const cohort = students.filter(s => s.course === c.name)
       const avg    = cohort.length ? Math.round(cohort.reduce((sum, s) => sum + s.age, 0) / cohort.length) : 0
       return { name: c.name.split(' ')[0], avg, color: c.color }
@@ -93,7 +95,7 @@ export default function Analytics() {
       .map(([month, enrollments]) => ({ month, enrollments }))
 
     return { ageBuckets, courseData, genderData, statusData, avgAgeData, monthlyChart, total }
-  }, [students])
+  }, [students, courses])
 
   if (loading) return <Spinner message="Loading analytics…" />
   if (error)   return <ErrorMsg message={error} onRetry={load} />
