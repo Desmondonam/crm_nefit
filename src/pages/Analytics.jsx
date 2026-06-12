@@ -1,10 +1,13 @@
+import { useState, useEffect, useMemo } from 'react'
 import {
   BarChart, Bar, PieChart, Pie, Cell, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
-} from 'recharts';
-import { STUDENTS, COURSES, MONTHLY_ENROLLMENTS, getCourseColor } from '../data/mockData';
+} from 'recharts'
+import { getStudents } from '../lib/api'
+import { COURSES, getCourseColor } from '../data/mockData'
+import Spinner, { ErrorMsg } from '../components/Spinner'
 
-const PIE_COLORS = ['#6366f1','#0ea5e9','#ef4444','#f59e0b','#10b981','#8b5cf6'];
+const PIE_COLORS = ['#6366f1','#0ea5e9','#ef4444','#f59e0b','#10b981','#8b5cf6']
 
 function ChartCard({ title, subtitle, children, span = '' }) {
   return (
@@ -13,74 +16,99 @@ function ChartCard({ title, subtitle, children, span = '' }) {
       {subtitle && <p className="text-slate-400 text-xs mt-0.5 mb-4">{subtitle}</p>}
       <div className="mt-3">{children}</div>
     </div>
-  );
+  )
 }
 
 function CustomTooltip({ active, payload, label }) {
-  if (!active || !payload?.length) return null;
+  if (!active || !payload?.length) return null
   return (
     <div className="bg-white border border-slate-200 rounded-lg shadow-lg px-3 py-2 text-sm">
       <p className="font-medium text-slate-700">{label}</p>
-      {payload.map(p => (
-        <p key={p.name} style={{ color: p.color }}>{p.name}: {p.value}</p>
-      ))}
+      {payload.map(p => <p key={p.name} style={{ color: p.color }}>{p.name}: {p.value}</p>)}
     </div>
-  );
+  )
 }
 
 export default function Analytics() {
-  // Age distribution bucketed
-  const ageBuckets = [
-    { range: '15–19', min: 15, max: 19 },
-    { range: '20–24', min: 20, max: 24 },
-    { range: '25–29', min: 25, max: 29 },
-    { range: '30–34', min: 30, max: 34 },
-    { range: '35–39', min: 35, max: 39 },
-  ].map(b => ({
-    range: b.range,
-    count: STUDENTS.filter(s => s.age >= b.min && s.age <= b.max).length,
-  }));
+  const [students, setStudents] = useState([])
+  const [loading,  setLoading]  = useState(true)
+  const [error,    setError]    = useState(null)
 
-  // Course enrollment
-  const courseData = COURSES.map(c => ({
-    name: c.name,
-    students: STUDENTS.filter(s => s.course === c.name).length,
-    color: c.color,
-  }));
+  async function load() {
+    setLoading(true); setError(null)
+    try { setStudents(await getStudents()) }
+    catch (e) { setError(e.message) }
+    finally { setLoading(false) }
+  }
+  useEffect(() => { load() }, [])
 
-  // Gender distribution
-  const genderData = [
-    { name: 'Male',   value: STUDENTS.filter(s => s.gender === 'Male').length   },
-    { name: 'Female', value: STUDENTS.filter(s => s.gender === 'Female').length },
-    { name: 'Other',  value: STUDENTS.filter(s => s.gender === 'Other').length  },
-  ].filter(d => d.value > 0);
+  const charts = useMemo(() => {
+    const total = students.length
+    if (!total) return null
 
-  // Status distribution
-  const statusData = [
-    { name: 'Active',    value: STUDENTS.filter(s => s.status === 'Active').length,    color: '#10b981' },
-    { name: 'Inactive',  value: STUDENTS.filter(s => s.status === 'Inactive').length,  color: '#94a3b8' },
-    { name: 'Completed', value: STUDENTS.filter(s => s.status === 'Completed').length, color: '#6366f1' },
-    { name: 'On Hold',   value: STUDENTS.filter(s => s.status === 'On Hold').length,   color: '#f59e0b' },
-  ];
+    // Age distribution
+    const ageBuckets = [
+      { range: '15–19', min: 15, max: 19 },
+      { range: '20–24', min: 20, max: 24 },
+      { range: '25–29', min: 25, max: 29 },
+      { range: '30–34', min: 30, max: 34 },
+      { range: '35+',   min: 35, max: 99 },
+    ].map(b => ({ range: b.range, count: students.filter(s => s.age >= b.min && s.age <= b.max).length }))
 
-  // Average age per course
-  const avgAgeData = COURSES.map(c => {
-    const cohort = STUDENTS.filter(s => s.course === c.name);
-    const avg    = cohort.length ? Math.round(cohort.reduce((sum, s) => sum + s.age, 0) / cohort.length) : 0;
-    return { name: c.name.split(' ')[0], avg, color: c.color };
-  });
+    // Course enrollment
+    const courseData = COURSES.map(c => ({
+      name: c.name, students: students.filter(s => s.course === c.name).length, color: c.color,
+    }))
 
-  const total = STUDENTS.length;
+    // Gender distribution
+    const genderData = ['Male', 'Female', 'Other']
+      .map(g => ({ name: g, value: students.filter(s => s.gender === g).length }))
+      .filter(d => d.value > 0)
+
+    // Status distribution
+    const statusData = [
+      { name: 'Active',    value: students.filter(s => s.status === 'Active').length,    color: '#10b981' },
+      { name: 'Inactive',  value: students.filter(s => s.status === 'Inactive').length,  color: '#94a3b8' },
+      { name: 'Completed', value: students.filter(s => s.status === 'Completed').length, color: '#6366f1' },
+      { name: 'On Hold',   value: students.filter(s => s.status === 'On Hold').length,   color: '#f59e0b' },
+    ]
+
+    // Average age per course
+    const avgAgeData = COURSES.map(c => {
+      const cohort = students.filter(s => s.course === c.name)
+      const avg    = cohort.length ? Math.round(cohort.reduce((sum, s) => sum + s.age, 0) / cohort.length) : 0
+      return { name: c.name.split(' ')[0], avg, color: c.color }
+    })
+
+    // Monthly enrollments (computed from real data)
+    const monthly = {}
+    students.forEach(s => {
+      if (!s.enrollment_date) return
+      const d   = new Date(s.enrollment_date)
+      const key = `${d.toLocaleString('default', { month: 'short' })} ${String(d.getFullYear()).slice(2)}`
+      monthly[key] = (monthly[key] || 0) + 1
+    })
+    const monthlyChart = Object.entries(monthly)
+      .sort(([a], [b]) => new Date('1 ' + a) - new Date('1 ' + b))
+      .map(([month, enrollments]) => ({ month, enrollments }))
+
+    return { ageBuckets, courseData, genderData, statusData, avgAgeData, monthlyChart, total }
+  }, [students])
+
+  if (loading) return <Spinner message="Loading analytics…" />
+  if (error)   return <ErrorMsg message={error} onRetry={load} />
+  if (!charts) return <div className="text-center py-20 text-slate-400">No data yet.</div>
+
+  const { ageBuckets, courseData, genderData, statusData, avgAgeData, monthlyChart, total } = charts
 
   return (
     <div className="space-y-6">
-      {/* Summary chips */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Avg. Age',       value: `${Math.round(STUDENTS.reduce((s,st)=>s+st.age,0)/total)} yrs` },
-          { label: 'Avg. Progress',  value: `${Math.round(STUDENTS.reduce((s,st)=>s+st.progress,0)/total)}%`  },
-          { label: 'Total Enrolled', value: total                                                              },
-          { label: 'Grad Rate',      value: `${Math.round(STUDENTS.filter(s=>s.status==='Completed').length/total*100)}%` },
+          { label: 'Avg. Age',       value: `${Math.round(students.reduce((s,st) => s + st.age, 0) / total)} yrs` },
+          { label: 'Avg. Progress',  value: `${Math.round(students.reduce((s,st) => s + st.progress, 0) / total)}%`  },
+          { label: 'Total Enrolled', value: total                                                                       },
+          { label: 'Grad Rate',      value: `${Math.round(students.filter(s => s.status === 'Completed').length / total * 100)}%` },
         ].map(c => (
           <div key={c.label} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100 text-center">
             <p className="text-2xl font-bold text-indigo-600">{c.value}</p>
@@ -90,28 +118,19 @@ export default function Analytics() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Monthly enrollments */}
         <ChartCard title="Monthly Enrollments" subtitle="New student sign-ups per month" span="lg:col-span-2">
           <ResponsiveContainer width="100%" height={240}>
-            <LineChart data={MONTHLY_ENROLLMENTS} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+            <LineChart data={monthlyChart} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#94a3b8' }} />
               <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} allowDecimals={false} />
               <Tooltip content={<CustomTooltip />} />
-              <Line
-                type="monotone"
-                dataKey="enrollments"
-                name="Enrollments"
-                stroke="#6366f1"
-                strokeWidth={2.5}
-                dot={{ fill: '#6366f1', r: 4 }}
-                activeDot={{ r: 6 }}
-              />
+              <Line type="monotone" dataKey="enrollments" name="Enrollments" stroke="#6366f1" strokeWidth={2.5}
+                dot={{ fill: '#6366f1', r: 4 }} activeDot={{ r: 6 }} />
             </LineChart>
           </ResponsiveContainer>
         </ChartCard>
 
-        {/* Age distribution */}
         <ChartCard title="Age Distribution" subtitle="Number of students per age group">
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={ageBuckets} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
@@ -124,7 +143,6 @@ export default function Analytics() {
           </ResponsiveContainer>
         </ChartCard>
 
-        {/* Course enrollment */}
         <ChartCard title="Students per Course" subtitle="Enrollment split across all courses">
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={courseData} layout="vertical" margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -139,19 +157,10 @@ export default function Analytics() {
           </ResponsiveContainer>
         </ChartCard>
 
-        {/* Gender pie */}
         <ChartCard title="Gender Distribution" subtitle="Male vs. female breakdown">
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
-              <Pie
-                data={genderData}
-                cx="50%"
-                cy="50%"
-                innerRadius={55}
-                outerRadius={85}
-                paddingAngle={4}
-                dataKey="value"
-              >
+              <Pie data={genderData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={4} dataKey="value">
                 {genderData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
               </Pie>
               <Tooltip formatter={(v, n) => [`${v} (${Math.round(v/total*100)}%)`, n]} />
@@ -160,18 +169,10 @@ export default function Analytics() {
           </ResponsiveContainer>
         </ChartCard>
 
-        {/* Status pie */}
         <ChartCard title="Enrollment Status" subtitle="Active, completed, on hold, inactive">
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
-              <Pie
-                data={statusData}
-                cx="50%"
-                cy="50%"
-                outerRadius={85}
-                paddingAngle={3}
-                dataKey="value"
-              >
+              <Pie data={statusData} cx="50%" cy="50%" outerRadius={85} paddingAngle={3} dataKey="value">
                 {statusData.map(s => <Cell key={s.name} fill={s.color} />)}
               </Pie>
               <Tooltip formatter={(v, n) => [`${v} (${Math.round(v/total*100)}%)`, n]} />
@@ -180,7 +181,6 @@ export default function Analytics() {
           </ResponsiveContainer>
         </ChartCard>
 
-        {/* Average age per course */}
         <ChartCard title="Average Age by Course" subtitle="Mean student age in each programme" span="lg:col-span-2">
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={avgAgeData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -196,5 +196,5 @@ export default function Analytics() {
         </ChartCard>
       </div>
     </div>
-  );
+  )
 }
