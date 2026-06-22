@@ -199,10 +199,10 @@ export async function enrollStudentPublic(student) {
     .select()
     .single()
   if (error) throw error
-  // free course — mark payment as Paid immediately
+  // paid course — starts as Unpaid until payment is confirmed
   await supabase
     .from('student_payments')
-    .insert([{ student_id: data.id, amount_paid: 0, status: 'Paid', payment_date: new Date().toISOString().split('T')[0], method: 'Free' }])
+    .insert([{ student_id: data.id, amount_paid: 0, status: 'Unpaid' }])
   return data
 }
 

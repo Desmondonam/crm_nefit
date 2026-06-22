@@ -2,9 +2,12 @@ import { useState } from 'react'
 import { CheckCircle2, User, Mail, Phone, MapPin, Calendar, ChevronDown, AlertCircle } from 'lucide-react'
 import { enrollStudentPublic } from '../lib/api'
 
-const COURSE_NAME = 'AI for the Future of Work'
-const COURSE_ICON = '🤖'
-const COURSE_COLOR = '#6366f1'
+const COURSE_NAME       = 'Data Analytics with AI'
+const COURSE_ICON       = '📊'
+const COURSE_COLOR      = '#0ea5e9'
+const COURSE_FEE        = 'QAR 1,500'
+const COURSE_INSTRUCTOR = 'Desmond Onam'
+const COURSE_DURATION   = '12 Weeks'
 
 const SOURCES = [
   'WhatsApp', 'Instagram', 'LinkedIn', 'Facebook',
@@ -46,15 +49,15 @@ function SuccessScreen({ name, refId }) {
           <p className="text-xs font-semibold text-indigo-400 uppercase tracking-wide mb-3">What happens next?</p>
           <div className="flex items-start gap-3 text-sm text-slate-600">
             <span className="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
-            Our team will reach out to you within 24 hours with course access details.
+            Our team will contact you within 24 hours with payment instructions (QAR 1,500).
           </div>
           <div className="flex items-start gap-3 text-sm text-slate-600">
             <span className="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
-            You will receive course materials, schedule, and a welcome message.
+            Once payment is confirmed you will receive your course schedule and materials.
           </div>
           <div className="flex items-start gap-3 text-sm text-slate-600">
             <span className="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
-            Join our WhatsApp group to connect with fellow learners.
+            Join our WhatsApp group and start learning with Desmond Onam.
           </div>
         </div>
         <p className="text-xs text-slate-400">Reference ID: <span className="font-mono font-semibold text-slate-600">NE-{refId}</span></p>
@@ -127,25 +130,25 @@ export default function PublicEnroll() {
 
         {/* Course banner */}
         <div className="rounded-3xl p-6 mb-6 text-white relative overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}>
-          <div className="absolute inset-0 opacity-10 text-[120px] flex items-center justify-end pr-6 leading-none select-none">🤖</div>
+          style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)' }}>
+          <div className="absolute inset-0 opacity-10 text-[120px] flex items-center justify-end pr-6 leading-none select-none">📊</div>
           <div className="relative">
             <span className="inline-block text-xs font-bold bg-white/20 text-white px-3 py-1 rounded-full uppercase tracking-wide mb-3">
-              Free Course · Limited Seats
+              {COURSE_DURATION} · Professional Certificate
             </span>
             <h1 className="text-2xl font-bold leading-tight mb-2">{COURSE_NAME}</h1>
-            <p className="text-indigo-200 text-sm leading-relaxed">
-              Discover how artificial intelligence is reshaping every industry — and how you can stay ahead. No prior tech experience required.
+            <p className="text-sky-100 text-sm leading-relaxed">
+              Master data analysis techniques powered by AI tools — from dashboards and insights to predictive models. Hands-on, practical, and career-ready.
             </p>
-            <div className="flex items-center gap-4 mt-4 text-sm">
-              <span className="flex items-center gap-1.5 text-indigo-100">
-                <span className="text-base">🕒</span> Flexible schedule
+            <div className="flex flex-wrap items-center gap-3 mt-4 text-sm">
+              <span className="flex items-center gap-1.5 text-sky-100">
+                <span className="text-base">👨‍🏫</span> {COURSE_INSTRUCTOR}
               </span>
-              <span className="flex items-center gap-1.5 text-indigo-100">
-                <span className="text-base">🎓</span> Certificate included
+              <span className="flex items-center gap-1.5 text-sky-100">
+                <span className="text-base">🕒</span> {COURSE_DURATION}
               </span>
               <span className="flex items-center gap-1.5 bg-white/20 rounded-full px-3 py-1 font-bold text-white">
-                FREE
+                {COURSE_FEE}
               </span>
             </div>
           </div>
@@ -234,7 +237,7 @@ export default function PublicEnroll() {
               style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}>
               {submitting
                 ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Registering…</span>
-                : 'Register for Free →'
+                : 'Register Now →'
               }
             </button>
 
